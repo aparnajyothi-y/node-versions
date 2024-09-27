@@ -8,7 +8,7 @@ on:
 
 jobs:
   manifest:
-    uses: actions/versions-package-tools/.github/workflows/validate-manifest.yml@main
+    uses: aparnajyothi-y/versions-package-tools/.github/workflows/validate-manifest.yml@main
     with:
       tool-name: "Node"
       image-url: "https://nodejs.org/static/images/logo-hexagon-card.png"
