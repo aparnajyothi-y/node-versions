@@ -3,14 +3,8 @@ on:
 # The GITHUB_TOKEN secret is used to create a PR
 # The pull_request event will not be triggered by it
 # That's one of the reasons we need the schedule to validate the versions-manifest.json file
-  schedule:
-    - cron: '0 8,20 * * *'
+ 
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'versions-manifest.json'
 
 jobs:
   manifest:
