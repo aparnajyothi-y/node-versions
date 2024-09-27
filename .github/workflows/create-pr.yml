@@ -4,7 +4,7 @@ on:
 
 jobs:
   create-pr:
-    uses: actions/versions-package-tools/.github/workflows/create-pr-to-update-manifest.yml@main
+    uses: aparnajyothi-y/versions-package-tools/.github/workflows/create-pr-to-update-manifest.yml@main
     with:
       tool-name: "node"
     secrets: inherit
