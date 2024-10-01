@@ -1,6 +1,7 @@
 name: Create Pull Request
 on:
-  workflow_dispatch:
+  push:
+    branches: [ test-ubuntu-24.04 ]
 
 jobs:
   create-pr:
