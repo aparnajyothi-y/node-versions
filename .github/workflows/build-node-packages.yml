@@ -19,7 +19,7 @@ on:
     - '**.md'
     branches:
     - 'main'
-  push:
+  
 
 jobs:
   node:
