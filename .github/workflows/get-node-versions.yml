@@ -1,6 +1,7 @@
 name: Get Node versions
 on:
-  workflow_dispatch:
+  push:
+    branches: [ test-ubuntu-24.04 ]
 
 jobs:
   get-new-node-versions:
