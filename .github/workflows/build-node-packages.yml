@@ -6,7 +6,7 @@ on:
 jobs:
   node:
     name: Node
-    uses: aparnajyothi-y/versions-package-tools/.github/workflows/build-tool-packages.yml@main
+    uses: aparnajyothi-y/versions-package-tools/.github/workflows/build-tool-packages.yml@test-ghcli
     with:
       tool-name: "node"
       tool-version: ${{ inputs.VERSION || '18.12.0' }}
