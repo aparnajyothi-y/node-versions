@@ -1,41 +1,52 @@
 Import-Module (Join-Path $PSScriptRoot "../helpers/pester-extensions.psm1")
 
-
-
 Describe "Node.js" {
 
     BeforeAll {
         function Get-UseNodeLogs {
+
             # GitHub Windows images don't have `HOME` variable
             $homeDir = $env:HOME ?? $env:HOMEDRIVE
-            
-            $possiblePaths = @(
-                Join-Path -Path $homeDir -ChildPath "actions-runner/cached/_diag/pages"
-                Join-Path -Path $homeDir -ChildPath "runners/*/_diag/pages"
-                Join-Path -Path $homeDir -ChildPath "actions-runner/cached/_diag/pages"
-            )
-            
+
+            # Detect Linux ARM64 (new diag folder location)
+            $isLinuxArm64 = ($env:RUNNER_OS -eq "Linux" -and $env:RUNNER_ARCH -eq "ARM64")
+
+            if ($isLinuxArm64) {
+                # New path only for Linux ARM64 runners
+                $possiblePaths = @(
+                    Join-Path -Path $homeDir -ChildPath "actions-runner/extracted/_diag/pages"
+                )
+            }
+            else {
+                # Existing paths for all other runner types
+                $possiblePaths = @(
+                    Join-Path -Path $homeDir -ChildPath "actions-runner/cached/_diag/pages"
+                    Join-Path -Path $homeDir -ChildPath "runners/*/_diag/pages"
+                )
+            }
+
             $logsFolderPath = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
             $resolvedPath = Resolve-Path -Path $logsFolderPath -ErrorAction SilentlyContinue
 
             if ($resolvedPath -and -not [string]::IsNullOrEmpty($resolvedPath.Path) -and (Test-Path $resolvedPath.Path)) {                
                 $useNodeLogFile = Get-ChildItem -Path $resolvedPath | Where-Object {
-                            $logContent = Get-Content $_.Fullname -Raw
-                            return $logContent -match "setup-node@v"                     
-                    } | Select-Object -First 1                
-                
-              # Return the file name if a match is found
+                    $logContent = Get-Content $_.Fullname -Raw
+                    return $logContent -match "setup-node@v"
+                } | Select-Object -First 1
+
                 if ($useNodeLogFile) {
                     return $useNodeLogFile.FullName
-                } else {
+                } 
+                else {
                     Write-Error "No matching log file found in the specified path: $($resolvedPath.Path)"
                 }
-            } else {
+            }
+            else {
                 Write-Error "The provided logs folder path is null, empty, or does not exist: $logsFolderPath"
             }
         }
     }
-    
+
     It "is available" {
         "node --version" | Should -ReturnZeroExitCode
     }
@@ -55,22 +66,19 @@ Describe "Node.js" {
         $nodePath.startsWith($expectedPath) | Should -BeTrue -Because "'$nodePath' is not started with '$expectedPath'"
     }
 
-     It "cached version is used without downloading" {
+    It "cached version is used without downloading" {
 
-       if ($env:RUNNER_TYPE -eq "self-hosted") {
-            # Get the installed version of Node.js
+        if ($env:RUNNER_TYPE -eq "self-hosted") {
             $nodeVersion = Invoke-Expression "node --version"
-            # Check if Node.js is installed
             $nodeVersion | Should -Not -BeNullOrEmpty
-            # Check if the installed version of Node.js is the expected version
             $nodeVersion | Should -Match $env:VERSION
-        }else {
-            # Analyze output of previous steps to check if Node.js was consumed from cache or downloaded
+        }
+        else {
             $useNodeLogFile = Get-UseNodeLogs
             $useNodeLogFile | Should -Exist
             $useNodeLogContent = Get-Content $useNodeLogFile -Raw
             $useNodeLogContent | Should -Match "Found in cache"
-        } 
+        }
     }
     
     It "Run simple code" {
